@@ -1,24 +1,24 @@
 package actors.impl;
 
 import actors.Writer;
-import storage.Storage;
+import storage.structure.Document;
 
-public class ConcreteWriter extends BaseRole implements Writer {
-    private final String name;
+public class ConcreteWriter implements Writer {
 
-    public ConcreteWriter(Storage storage, String name) {
-        super(storage);
+    private final String authorName;
 
-        this.name = name;
+    public ConcreteWriter(String authorName) {
+        this.authorName = authorName;
     }
 
     @Override
-    public void createDocument(String fullPath, String content) {
-        storage.createDocument(fullPath, name, content);
+    public Document createDocument(String name, String content) {
+        return new Document(name, authorName, content);
     }
 
     @Override
-    public void updateDocument(String fullPath, String newName, String newContent) {
-        storage.updateDocument(fullPath, newName, newContent);
+    public void updateDocument(Document document, String name, String content) {
+        document.setName(name);
+        document.setContent(content);
     }
 }

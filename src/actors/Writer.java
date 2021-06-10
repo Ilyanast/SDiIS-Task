@@ -1,6 +1,8 @@
 package actors;
 
+import storage.structure.Document;
+
 public interface Writer {
-    void createDocument(String fullPath, String content);
-    void updateDocument(String fullPath, String newName, String newContent);
+    Document createDocument(String name, String content);
+    void updateDocument(Document document, String name, String content);
 }

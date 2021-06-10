@@ -16,10 +16,9 @@ public class InmemoryStorage implements Storage {
     public static String PATH_SEPARATOR = "/";
     public static String ROOT_CATALOG_NAME = "root";
 
-    private ReadWriteLock readWriteLock;
     private final Catalog rootCatalog;
 
-    private class PathAndName {
+    private static class PathAndName {
         public String path;
         public String fileName;
 
@@ -31,24 +30,17 @@ public class InmemoryStorage implements Storage {
 
     public InmemoryStorage() {
         rootCatalog = new Catalog(ROOT_CATALOG_NAME);
-        readWriteLock = new ReentrantReadWriteLock();
     }
 
     @Override
-    public synchronized void createDocument(String fullPath, String authorName, String content) {
-        PathAndName pathAndName = getPahAndName(fullPath);
-        Catalog parentCatalog = getCatalogForPath(pathAndName.path);
-
-        Document document = new Document(pathAndName.fileName, authorName, content);
+    public synchronized void addDocumentToCatalog(String catalogPath, Document document) {
+        Catalog parentCatalog = getCatalogForPath(catalogPath);
         parentCatalog.addStorageUnit(document);
     }
 
     @Override
-    public synchronized void createCatalog(String fullPath) {
-        PathAndName pathAndName = getPahAndName(fullPath);
-        Catalog parentCatalog = getCatalogForPath(pathAndName.path);
-
-        Catalog catalog = new Catalog(pathAndName.fileName);
+    public synchronized void addCatalog(String catalogPath, Catalog catalog) {
+        Catalog parentCatalog = getCatalogForPath(catalogPath);
         parentCatalog.addStorageUnit(catalog);
     }
 
@@ -58,16 +50,6 @@ public class InmemoryStorage implements Storage {
         Catalog parentCatalog = getCatalogForPath(pathAndName.path);
 
         parentCatalog.removeStorageUnit(pathAndName.fileName);
-    }
-
-    @Override
-    public synchronized void updateDocument(String fullPath, String newName, String newContent) {
-        PathAndName pathAndName = getPahAndName(fullPath);
-        Catalog parentCatalog = getCatalogForPath(pathAndName.path);
-
-        Document document = (Document) parentCatalog.findByName(pathAndName.fileName);
-        document.setName(newName);
-        document.setContent(newContent);
     }
 
     @Override

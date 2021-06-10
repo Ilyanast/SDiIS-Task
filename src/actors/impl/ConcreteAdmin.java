@@ -2,15 +2,19 @@ package actors.impl;
 
 import actors.Admin;
 import storage.Storage;
+import storage.structure.Catalog;
 
-public class ConcreteAdmin extends BaseRole implements Admin {
+public class ConcreteAdmin implements Admin {
+
+    private final Storage storage;
+
     public ConcreteAdmin(Storage storage) {
-        super(storage);
+        this.storage = storage;
     }
 
     @Override
-    public void createCatalog(String fullPath) {
-        storage.createCatalog(fullPath);
+    public void createCatalog(String catalogPath, Catalog catalog) {
+        storage.addCatalog(catalogPath, catalog);
     }
 
     @Override

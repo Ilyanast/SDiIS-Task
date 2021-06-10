@@ -6,18 +6,17 @@ import storage.structure.Document;
 
 import java.util.List;
 
-public class ConcreteSecretary extends BaseRole implements Secretary {
-    private final String name;
+public class ConcreteSecretary implements Secretary {
 
-    public ConcreteSecretary(Storage storage, String name) {
-        super(storage);
+    private final Storage storage;
 
-        this.name = name;
+    public ConcreteSecretary(Storage storage) {
+        this.storage = storage;
     }
 
     @Override
-    public void createDocument(String fullPath, String content) {
-        storage.createDocument(fullPath, name, content);
+    public void addDocumentToCatalog(String catalogPath, Document document) {
+        storage.addDocumentToCatalog(catalogPath, document);
     }
 
     @Override

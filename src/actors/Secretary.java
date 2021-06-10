@@ -5,7 +5,7 @@ import storage.structure.Document;
 import java.util.List;
 
 public interface Secretary {
-    void createDocument(String fullPath, String content);
+    void addDocumentToCatalog(String catalogPath, Document document);
     List<Document> findByAuthorName(String authorName);
     List<Document> findByName(String name);
 }
