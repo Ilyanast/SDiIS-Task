@@ -35,118 +35,76 @@ public class InmemoryStorage implements Storage {
     }
 
     @Override
-    public void createDocument(String fullPath, String authorName, String content) {
-        readWriteLock.writeLock().lock();
+    public synchronized void createDocument(String fullPath, String authorName, String content) {
+        PathAndName pathAndName = getPahAndName(fullPath);
+        Catalog parentCatalog = getCatalogForPath(pathAndName.path);
 
-        try {
-            PathAndName pathAndName = getPahAndName(fullPath);
-            Catalog parentCatalog = getCatalogForPath(pathAndName.path);
-
-            Document document = new Document(pathAndName.fileName, authorName, content);
-            parentCatalog.addStorageUnit(document);
-        } finally {
-            readWriteLock.writeLock().unlock();
-        }
+        Document document = new Document(pathAndName.fileName, authorName, content);
+        parentCatalog.addStorageUnit(document);
     }
 
     @Override
-    public void createCatalog(String fullPath) {
-        readWriteLock.writeLock().lock();
+    public synchronized void createCatalog(String fullPath) {
+        PathAndName pathAndName = getPahAndName(fullPath);
+        Catalog parentCatalog = getCatalogForPath(pathAndName.path);
 
-        try {
-            PathAndName pathAndName = getPahAndName(fullPath);
-            Catalog parentCatalog = getCatalogForPath(pathAndName.path);
-
-            Catalog catalog = new Catalog(pathAndName.fileName);
-            parentCatalog.addStorageUnit(catalog);
-        } finally {
-            readWriteLock.writeLock().unlock();
-        }
+        Catalog catalog = new Catalog(pathAndName.fileName);
+        parentCatalog.addStorageUnit(catalog);
     }
 
     @Override
-    public void deleteStorageUnit(String fullPath) {
-        readWriteLock.writeLock().lock();
+    public synchronized void deleteStorageUnit(String fullPath) {
+        PathAndName pathAndName = getPahAndName(fullPath);
+        Catalog parentCatalog = getCatalogForPath(pathAndName.path);
 
-        try {
-            PathAndName pathAndName = getPahAndName(fullPath);
-            Catalog parentCatalog = getCatalogForPath(pathAndName.path);
-
-            parentCatalog.removeStorageUnit(pathAndName.fileName);
-        } finally {
-            readWriteLock.writeLock().unlock();
-        }
+        parentCatalog.removeStorageUnit(pathAndName.fileName);
     }
 
     @Override
-    public void updateDocument(String fullPath, String newName, String newContent) {
-        readWriteLock.writeLock().lock();
+    public synchronized void updateDocument(String fullPath, String newName, String newContent) {
+        PathAndName pathAndName = getPahAndName(fullPath);
+        Catalog parentCatalog = getCatalogForPath(pathAndName.path);
 
-        try {
-            PathAndName pathAndName = getPahAndName(fullPath);
-            Catalog parentCatalog = getCatalogForPath(pathAndName.path);
-
-            Document document = (Document) parentCatalog.findByName(pathAndName.fileName);
-            document.setName(newName);
-            document.setContent(newContent);
-        } finally {
-            readWriteLock.writeLock().unlock();
-        }
+        Document document = (Document) parentCatalog.findByName(pathAndName.fileName);
+        document.setName(newName);
+        document.setContent(newContent);
     }
 
     @Override
-    public void moveStorageUnit(String sourceFilePath, String destinationCatalogPath) {
-        readWriteLock.writeLock().lock();
+    public synchronized void moveStorageUnit(String sourceFilePath, String destinationCatalogPath) {
+        PathAndName pathAndName = getPahAndName(sourceFilePath);
+        Catalog sourceCatalog = getCatalogForPath(pathAndName.path);
+        Catalog destinationCatalog = getCatalogForPath(destinationCatalogPath);
 
-        try {
-            PathAndName pathAndName = getPahAndName(sourceFilePath);
-            Catalog sourceCatalog = getCatalogForPath(pathAndName.path);
-            Catalog destinationCatalog = getCatalogForPath(destinationCatalogPath);
-
-            if (!sourceCatalog.isStorageUnitExist(pathAndName.fileName)
-                    || destinationCatalog.isStorageUnitExist(pathAndName.fileName)) {
-                throw new IncorrectPathException();
-            }
-
-            StorageUnit removedStorageUnit = sourceCatalog.removeStorageUnit(pathAndName.fileName);
-            destinationCatalog.addStorageUnit(removedStorageUnit);
-        } finally {
-            readWriteLock.writeLock().unlock();
+        if (!sourceCatalog.isStorageUnitExist(pathAndName.fileName)
+                || destinationCatalog.isStorageUnitExist(pathAndName.fileName)) {
+            throw new IncorrectPathException();
         }
+
+        StorageUnit removedStorageUnit = sourceCatalog.removeStorageUnit(pathAndName.fileName);
+        destinationCatalog.addStorageUnit(removedStorageUnit);
     }
 
     @Override
-    public List<Document> findByAuthorName(String authorName) {
-        readWriteLock.readLock().lock();
-
-        try {
-            return findByCondition(
-                    storageUnit -> storageUnit instanceof Document
-                                    && ((Document) storageUnit).getAuthorName().equals(authorName)
-                )
-                .stream()
-                .map(element -> (Document) element)
-                .collect(Collectors.toList());
-        } finally {
-            readWriteLock.readLock().unlock();
-        }
+    public synchronized List<Document> findByAuthorName(String authorName) {
+        return findByCondition(
+                storageUnit -> storageUnit instanceof Document
+                                && ((Document) storageUnit).getAuthorName().equals(authorName)
+            )
+            .stream()
+            .map(element -> (Document) element)
+            .collect(Collectors.toList());
     }
 
     @Override
-    public List<Document> findByName(String name) {
-        readWriteLock.readLock().lock();
-
-        try {
-            return findByCondition(
-                    storageUnit -> storageUnit instanceof Document
-                                    && storageUnit.getName().equals(name)
-                )
-                .stream()
-                .map(element -> (Document) element)
-                .collect(Collectors.toList());
-        } finally {
-            readWriteLock.readLock().unlock();
-        }
+    public synchronized List<Document> findByName(String name) {
+        return findByCondition(
+                storageUnit -> storageUnit instanceof Document
+                                && storageUnit.getName().equals(name)
+            )
+            .stream()
+            .map(element -> (Document) element)
+            .collect(Collectors.toList());
     }
 
     private List<StorageUnit> findByCondition(Predicate<StorageUnit> isSuitable) {
