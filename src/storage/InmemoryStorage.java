@@ -99,7 +99,7 @@ public class InmemoryStorage implements Storage {
                                    List<StorageUnit> suitableStorageUnits, Predicate<StorageUnit> isSuitable) {
         for (StorageUnit storageUnit : catalog.getStorageUnits()) {
             if (isSuitable.test(storageUnit)) {
-                suitableStorageUnits.add(storageUnit);
+                suitableStorageUnits.add(storageUnit.getCopy());
             }
 
             if (storageUnit instanceof Catalog) {

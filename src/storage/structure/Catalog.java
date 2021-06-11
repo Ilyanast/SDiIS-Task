@@ -7,11 +7,21 @@ import storage.exceptions.ExistingNameException;
 import storage.exceptions.StorageUnitNotFoundException;
 
 public class Catalog extends StorageUnit {
-    private final List<StorageUnit> storageUnits;
+    private List<StorageUnit> storageUnits;
 
     public Catalog(String name) {
         super(name);
         this.storageUnits = new ArrayList<>();
+    }
+
+    private Catalog(String name, List<StorageUnit> storageUnits) {
+        this(name);
+        this.storageUnits = storageUnits;
+    }
+
+    @Override
+    public StorageUnit getCopy() {
+        return new Catalog(getName(), List.copyOf(storageUnits));
     }
 
     public List<StorageUnit> getStorageUnits() {

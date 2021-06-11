@@ -11,6 +11,8 @@ public abstract class StorageUnit {
         return name;
     }
 
+    public abstract StorageUnit getCopy();
+
     public void setName(String newName) {
         this.name = name;
     }
